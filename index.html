@@ -477,6 +477,7 @@ section{padding:90px 52px;}
   animation:slideUp .3s ease;
 }
 @keyframes slideUp{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
 .modal-close{position:absolute;top:14px;right:18px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;}
 .modal h2{font-family:var(--font-h);font-size:30px;font-weight:400;color:var(--ink);margin-bottom:6px;}
 .modal p{color:var(--muted);font-size:13px;margin-bottom:28px;}
@@ -818,8 +819,7 @@ footer{
   /* WHATSAPP */
   .whatsapp-float{bottom:16px;left:16px;width:50px;height:50px;}
 
-  /* OWNER FAB */
-  .owner-fab{bottom:76px;left:16px;}
+
 
   /* OWNER PANEL */
   .owner-panel{padding:28px 20px;max-height:90vh;}
@@ -879,8 +879,7 @@ footer{
     <li><a href="#contact">Contact</a></li>
   </ul>
   <div class="nav-right">
-    <button class="btn-nav" onclick="openModal('login')">Sign In</button>
-    <button class="btn-nav solid" onclick="openModal('register')">List Unit</button>
+    <button class="btn-nav solid" onclick="openOwnerLogin()">🔐 Owner Login</button>
     <button class="hamburger" onclick="openMobileMenu()" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
@@ -895,8 +894,7 @@ footer{
   <a href="#agents" onclick="closeMobileMenu()">Agents</a>
   <a href="#contact" onclick="closeMobileMenu()">Contact</a>
   <div class="mobile-ctas">
-    <button class="btn-nav" onclick="closeMobileMenu();openModal('login')">Sign In</button>
-    <button class="btn-nav solid" onclick="closeMobileMenu();openModal('register')">List Unit</button>
+    <button class="btn-nav solid" onclick="closeMobileMenu();openOwnerLogin()">🔐 Owner Login</button>
   </div>
 </div>
 
@@ -1162,24 +1160,71 @@ footer{
 </footer>
 
 <!-- ── AUTH MODAL ── -->
-<div class="modal-overlay" id="authModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal()">✕</button>
-    <h2 id="modalTitle">Welcome Back</h2>
-    <p id="modalSub">Sign in to manage listings and save units.</p>
-    <button class="google-btn" onclick="googleLogin()">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G"/>Continue with Google
-    </button>
-    <div class="divider"><span>or</span></div>
-    <input class="modal-input" type="email" id="authEmail" placeholder="Email address"/>
-    <input class="modal-input" type="password" id="authPass" placeholder="Password"/>
-    <button class="btn-submit" onclick="emailAuth()" id="authBtn">Sign In</button>
-    <div class="modal-toggle">
-      <span id="modalToggleText">Don't have an account?</span>
-      <a onclick="toggleModal()" id="modalToggleLink"> Register</a>
+<!-- ── OWNER LOGIN MODAL ── -->
+<div class="modal-overlay" id="ownerLoginModal">
+  <div class="modal" style="max-width:400px">
+    <button class="modal-close" onclick="closeOwnerLogin()">✕</button>
+
+    <!-- STEP 1: Login form -->
+    <div id="loginStep">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--ocean),var(--teal));display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:26px">🌊</div>
+        <h2 style="font-family:var(--font-h);font-size:28px;font-weight:400;color:var(--ink);margin-bottom:6px">Owner Login</h2>
+        <p style="color:var(--muted);font-size:13px">Sign in to manage your Boracay New Coast listings</p>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <label style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:500;display:block;margin-bottom:6px">Email Address</label>
+        <div style="position:relative">
+          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px">✉️</span>
+          <input class="modal-input" type="email" id="ownerEmailInput" placeholder="yvonne.megaworldboracay@gmail.com"
+            style="padding-left:42px;width:100%"
+            onkeydown="if(event.key==='Enter')document.getElementById('ownerPassInput2').focus()"/>
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <label style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:500;display:block;margin-bottom:6px">Password</label>
+        <div style="position:relative">
+          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px">🔒</span>
+          <input class="modal-input" type="password" id="ownerPassInput2" placeholder="Enter your password"
+            style="padding-left:42px;width:100%;padding-right:44px"
+            onkeydown="if(event.key==='Enter')attemptOwnerLogin()"/>
+          <button onclick="togglePassVis()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px" id="passVisBtn">👁️</button>
+        </div>
+      </div>
+
+      <div id="loginError" style="display:none;background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;margin-bottom:14px;color:#dc2626;font-size:13px;text-align:center">
+        ❌ Incorrect email or password. Please try again.
+      </div>
+
+      <button class="btn-submit" onclick="attemptOwnerLogin()" style="width:100%;font-size:13px;letter-spacing:2px">
+        SIGN IN
+      </button>
+
+      <p style="text-align:center;margin-top:16px;font-size:12px;color:var(--muted)">
+        This login is for the site owner only.<br/>For property inquiries, use the contact form.
+      </p>
+    </div>
+
+    <!-- STEP 2: Logged in dashboard -->
+    <div id="loggedInStep" style="display:none;text-align:center;padding:10px 0">
+      <div style="font-size:52px;margin-bottom:16px">✅</div>
+      <h2 style="font-family:var(--font-h);font-size:28px;font-weight:400;color:var(--ink);margin-bottom:8px">Welcome, Yvonne!</h2>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:28px">Owner mode is active. Edit listings, upload photos, and manage the site.</p>
+      <div style="background:var(--sand);border-radius:10px;padding:16px;margin-bottom:16px;text-align:left">
+        <div style="font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;font-weight:600">Owner Tools</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button onclick="closeOwnerLogin();document.getElementById('uploadPanel').scrollIntoView({behavior:'smooth'})" style="padding:11px;background:var(--ocean);color:#fff;border:none;border-radius:8px;font-family:var(--font-b);font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer">➕ Add New Listing</button>
+          <button onclick="closeOwnerLogin();openOwnerPanel()" style="padding:11px;background:transparent;border:1.5px solid var(--ocean);color:var(--ocean);border-radius:8px;font-family:var(--font-b);font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer">⚙️ Site Settings</button>
+          <button onclick="ownerLogout()" style="padding:11px;background:transparent;border:1.5px solid #dc2626;color:#dc2626;border-radius:8px;font-family:var(--font-b);font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer">🔒 Sign Out</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+
+
 
 <!-- ── PROP MODAL ── -->
 <div id="propModal">
@@ -1226,12 +1271,11 @@ footer{
 <div class="owner-panel-bg" id="ownerBg" onclick="closeOwnerPanel()"></div>
 <div class="owner-panel" id="ownerPanel">
   <button style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:18px;color:var(--muted);cursor:pointer" onclick="closeOwnerPanel()">✕</button>
-  <h3>🔐 Owner Controls</h3>
-  <p>Enter your password to manage hotel/tower names and site settings.</p>
+  <h3>⚙️ Site Settings</h3>
+  <p>Manage tower names, site info, and settings. Re-enter password to confirm.</p>
 
   <div class="owner-lock" id="ownerLock">
     <label>Owner Password</label>
-    <!-- ✏️ OWNER_PASSWORD — Change "boracay2025" to your own password below in the JS -->
     <input type="password" id="ownerPassInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')unlockOwner()"/>
     <button class="btn-owner" onclick="unlockOwner()">Unlock</button>
   </div>
@@ -1270,8 +1314,6 @@ footer{
 </div>
 
 <div class="edit-mode-banner" id="editBanner">✏️ OWNER MODE — Click any text on the listing cards to edit it</div>
-<!-- Owner FAB -->
-<button class="owner-fab" onclick="openOwnerPanel()" title="Owner Login">⚙️</button>
 
 
 <!-- ── DESCRIPTION EDIT MODAL ── -->
@@ -1574,26 +1616,101 @@ function openPropModal(id) {
 function closePropModal() { document.getElementById('propModal').classList.remove('open'); }
 
 // =============================================
-// AUTH
+// OWNER LOGIN SYSTEM
+// ✏️ Change email and password below to your own
 // =============================================
 
-let authMode = 'login';
-function openModal(mode) { authMode=mode; document.getElementById('authModal').classList.add('open'); updateModalUI(); }
-function closeModal() { document.getElementById('authModal').classList.remove('open'); }
-function toggleModal() { authMode=authMode==='login'?'register':'login'; updateModalUI(); }
-function updateModalUI() {
-  const isLogin = authMode==='login';
-  document.getElementById('modalTitle').textContent = isLogin?'Welcome Back':'Create Account';
-  document.getElementById('modalSub').textContent = isLogin?'Sign in to manage and list units.':'Register to post listings and contact brokers.';
-  document.getElementById('authBtn').textContent = isLogin?'Sign In':'Create Account';
-  document.getElementById('modalToggleText').textContent = isLogin?"Don't have an account?":'Already have one?';
-  document.getElementById('modalToggleLink').textContent = isLogin?' Register':' Sign In';
+// ✏️ OWNER CREDENTIALS — change these
+const OWNER_EMAIL    = 'yvonne.megaworldboracay@gmail.com';
+const OWNER_PASSWORD_LOGIN = 'boracay2025'; // change this to your own password
+
+let ownerLoggedIn = false;
+
+function openOwnerLogin() {
+  document.getElementById('ownerLoginModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Show correct step
+  if (ownerLoggedIn) {
+    document.getElementById('loginStep').style.display = 'none';
+    document.getElementById('loggedInStep').style.display = 'block';
+  } else {
+    document.getElementById('loginStep').style.display = 'block';
+    document.getElementById('loggedInStep').style.display = 'none';
+    document.getElementById('loginError').style.display = 'none';
+    setTimeout(() => document.getElementById('ownerEmailInput').focus(), 200);
+  }
 }
-function googleLogin() { closeModal(); showToast('✓ Signed in with Google'); }
-function emailAuth() {
-  if (!document.getElementById('authEmail').value) { showToast('⚠️ Please enter your email'); return; }
-  closeModal(); showToast('✓ '+(authMode==='login'?'Signed in':'Account created'));
+
+function closeOwnerLogin() {
+  document.getElementById('ownerLoginModal').classList.remove('open');
+  document.body.style.overflow = '';
 }
+
+function togglePassVis() {
+  const inp = document.getElementById('ownerPassInput2');
+  const btn = document.getElementById('passVisBtn');
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁️'; }
+}
+
+function attemptOwnerLogin() {
+  const email = document.getElementById('ownerEmailInput').value.trim().toLowerCase();
+  const pass  = document.getElementById('ownerPassInput2').value;
+  const errEl = document.getElementById('loginError');
+
+  if (email === OWNER_EMAIL.toLowerCase() && pass === OWNER_PASSWORD_LOGIN) {
+    // SUCCESS
+    ownerLoggedIn = true;
+    errEl.style.display = 'none';
+
+    // Unlock owner mode
+    document.getElementById('ownerLock').style.display = 'none';
+    document.getElementById('ownerSection').classList.add('unlocked');
+    renderProperties(null);
+    document.getElementById('editBanner').classList.add('show');
+
+    // Update nav button
+    document.querySelector('.btn-nav.solid').textContent = '✅ Yvonne';
+
+    // Show logged-in step
+    document.getElementById('loginStep').style.display = 'none';
+    document.getElementById('loggedInStep').style.display = 'block';
+
+    showToast('✓ Welcome, Yvonne! Owner mode active.');
+    renderTowerEditor();
+
+  } else {
+    // FAIL — shake animation
+    errEl.style.display = 'block';
+    const modal = document.querySelector('#ownerLoginModal .modal');
+    modal.style.animation = 'none';
+    modal.offsetHeight; // reflow
+    modal.style.animation = 'shake 0.4s ease';
+    document.getElementById('ownerPassInput2').value = '';
+    document.getElementById('ownerPassInput2').style.borderColor = '#dc2626';
+    setTimeout(() => {
+      document.getElementById('ownerPassInput2').style.borderColor = '';
+    }, 1500);
+  }
+}
+
+function ownerLogout() {
+  ownerLoggedIn = false;
+  document.getElementById('ownerLock').style.display = '';
+  document.getElementById('ownerSection').classList.remove('unlocked');
+  document.getElementById('ownerEmailInput').value = '';
+  document.getElementById('ownerPassInput2').value = '';
+  document.getElementById('loginError').style.display = 'none';
+  renderProperties(null);
+  document.getElementById('editBanner').classList.remove('show');
+  document.querySelector('.btn-nav.solid').textContent = '🔐 Owner Login';
+  closeOwnerLogin();
+  showToast('🔒 Signed out successfully');
+}
+
+// Keep old openModal as no-op for any leftover refs
+function openModal(mode) { openOwnerLogin(); }
+function closeModal() { closeOwnerLogin(); }
 
 // =============================================
 // AI CHAT
